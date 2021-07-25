@@ -38,9 +38,9 @@ literally.
 #### Beautiful Soup Methods and Properties
 
 
-  `soup.title.string` gets the page's title (the same text in the browser tab for a page, this is the <title>     element
-  `soup.prettify()` is useful to print in case you want to see the HTML
-  `soup.find_all("a")` find all the anchor tags, or whatever argument is specified.
-  `soup.find("h1")` finds the first matching element
-  `soup.get_text()` gets the text from within a matching piece of soup/HTML
-  The `soup.select()` method takes in a CSS selector as a string and returns all matching elements. super useful
+`soup.title.string` gets the page's title (the same text in the browser tab for a page, this is the <title>     element
+`soup.prettify()` is useful to print in case you want to see the HTML
+`soup.find_all("a")` find all the anchor tags, or whatever argument is specified.
+`soup.find("h1")` finds the first matching element
+`soup.get_text()` gets the text from within a matching piece of soup/HTML
+The `soup.select()` method takes in a CSS selector as a string and returns all matching elements. super useful
