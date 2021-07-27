@@ -1,6 +1,7 @@
 from requests import get
 from bs4 import BeautifulSoup
 import os
+import pandas as pd
 
 
 def get_blog_articles(url):
@@ -16,6 +17,74 @@ def get_blog_articles(url):
     return blog_dict
 
 
+
+def tokenize(string):
+    '''
+    This function takes in a string and returns a tokenized string.
+    
+    '''
+    # create the tokenizer
+    tokenizer = nltk.tokenize.ToktokTokenizer()
+    # Use the tokenizer
+    string = tokenizer.tokenize(string, return_str=True)
+    
+    return string
+
+
+
+
+
+
+
+def get_blog_articles(urls):
+    # List of dictionaries
+    posts = [get_codeup_blog(url) for url in urls]
+    
+    return pd.DataFrame(posts)
+
+
+def acquire_codeup_blog():
+	urls = [
+	    "https://codeup.com/codeups-data-science-career-accelerator-is-here/",
+	    "https://codeup.com/data-science-myths/",
+	    "https://codeup.com/data-science-vs-data-analytics-whats-the-difference/",
+	    "https://codeup.com/10-tips-to-crush-it-at-the-sa-tech-job-fair/",
+	    "https://codeup.com/competitor-bootcamps-are-closing-is-the-model-in-danger/"
+	]
+
+	return get_blog_articles(urls)
+
+
+
+
+
+def get_codeup_blog(url):
+    
+    # Set the headers to show as Netscape Navigator on Windows 98, b/c I feel like creating an anomaly in the logs
+    headers = {"User-Agent": "Mozilla/4.5 (compatible; HTTrack 3.0x; Windows 98)"}
+
+    # Get the http response object from the server
+    response = get(url, headers=headers)
+    
+    soup = BeautifulSoup(response.text)
+    
+    title = soup.find("h1").text
+    published_date = soup.time.text
+    
+    if len(soup.select(".jupiterx-post-image")) > 0:
+        blog_image = soup.select(".jupiterx-post-image")[0].picture.img["data-src"]
+    else:
+        blog_image = None
+        
+    content = soup.select(".jupiterx-post-content")[0].text
+    
+    output = {}
+    output["title"] = title
+    output["published_date"] = published_date
+    output["blog_image"] = blog_image
+    output["content"] = content
+    
+    return output
 
 
 
