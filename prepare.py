@@ -2,19 +2,14 @@ from requests import get
 from bs4 import BeautifulSoup
 import os
 import pandas as pd
+import nltk
+from nltk.tokenize.toktok import ToktokTokenizer
+from nltk.corpus import stopwords
+import unicodedata
+import re
+import json
 
 
-
-def basic_clean(string):
-    '''
-    This function takes in a string and
-    returns the string normalized.
-    '''
-    string = unicodedata.normalize('NFKD', string)\
-             .encode('ascii', 'ignore')\
-             .decode('utf-8', 'ignore')
-    string = re.sub(r'[^\w\s]', '', string).lower()
-    return string
 
 
 
@@ -79,44 +74,97 @@ def remove_stopwords(string, extra_words = [], exclude_words = []):
 
 
 
+# def prep_article_data(df, column, extra_words=[], exclude_words=[]):
+#     '''
+#     This function take in a df and the string name for a text column with 
+#     option to pass lists for extra_words and exclude_words and
+#     returns a df with the text article title, original text, stemmed text,
+#     lemmatized text, cleaned, tokenized, & lemmatized text with stopwords removed.
+#     '''
+#     df['clean'] = df[column].apply(basic_clean)\
+#                             .apply(tokenize)\
+#                             .apply(remove_stopwords, 
+#                                    extra_words=extra_words, 
+#                                    exclude_words=exclude_words)
+    
+#     df['stemmed'] = df[column].apply(basic_clean)\
+#                             .apply(tokenize)\
+#                             .apply(stem)\
+#                             .apply(remove_stopwords, 
+#                                    extra_words=extra_words, 
+#                                    exclude_words=exclude_words)
+    
+#     df['lemmatized'] = df[column].apply(basic_clean)\
+#                             .apply(tokenize)\
+#                             .apply(lemmatize)\
+#                             .apply(remove_stopwords, 
+#                                    extra_words=extra_words, 
+#                                    exclude_words=exclude_words)
+    
+#     return df[['title', column,'clean', 'stemmed', 'lemmatized']]
+
+def basic_clean(string):
+    '''
+    This function takes in a string and
+    returns the string normalized.
+    '''
+    string = unicodedata.normalize('NFKD', string)\
+             .encode('ascii', 'ignore')\
+             .decode('utf-8', 'ignore')
+    ## removing special characters
+    string = re.sub(r"[^a-z0-9\s]", '', string)
+    #string = re.sub(r'[^\w\s]', '', string).lower()
+    return string
+
+
+
+def tokenize (string):
+    '''
+    take in a string and tokenize all the words in the string
+    '''
+    
+    # Create the tokenizer
+    tokenizer = nltk.tokenize.ToktokTokenizer()
+    # Use the tokenizer
+    string = tokenizer.tokenize(string, return_str = True)
+    return string
+
+
 def prep_article_data(df, column, extra_words=[], exclude_words=[]):
     '''
-    This function take in a df and the string name for a text column with 
+    This function take in a df and the string name for a text column with
     option to pass lists for extra_words and exclude_words and
     returns a df with the text article title, original text, stemmed text,
     lemmatized text, cleaned, tokenized, & lemmatized text with stopwords removed.
     '''
     df['clean'] = df[column].apply(basic_clean)\
                             .apply(tokenize)\
-                            .apply(remove_stopwords, 
-                                   extra_words=extra_words, 
+                            .apply(remove_stopwords,
+                                   extra_words=extra_words,
                                    exclude_words=exclude_words)
-    
-    df['stemmed'] = df[column].apply(basic_clean)\
-                            .apply(tokenize)\
-                            .apply(stem)\
-                            .apply(remove_stopwords, 
-                                   extra_words=extra_words, 
-                                   exclude_words=exclude_words)
-    
-    df['lemmatized'] = df[column].apply(basic_clean)\
-                            .apply(tokenize)\
-                            .apply(lemmatize)\
-                            .apply(remove_stopwords, 
-                                   extra_words=extra_words, 
-                                   exclude_words=exclude_words)
-    
-    return df[['title', column,'clean', 'stemmed', 'lemmatized']]
+    df['stemmed'] = df['clean'].apply(stem)
+    df['lemmatized'] = df['clean'].apply(lemmatize)
+    return df
 
 
 
 
+def ngrams_wordcloud (text_list, title_list, n=2):
+    for i in  range (0, len(text_list)):
+        plt.figure(figsize=(20,16))
+        plt.subplot(2,2,1)
+        pd.Series(nltk.ngrams(text_list[i].split(), n=n)).value_counts().head(10).plot.barh()
+        plt.title(f'Top 10 most common {title_list[i]} ngrams where n={n}')
+        plt.subplot(2,2,2)
+        img = WordCloud(background_color='white', width=800, height=600).generate(text_list[i])
+        plt.imshow(img)
+        plt.axis('off')
+        plt.title(f'Top 10 most common {title_list[i]} ngrams where n={n}')
+        #plt.tight_layout()
+        plt.show()
 
 
-
-
-
-
+#########.  REGEX. ###########
 
 def convert_date_format(target):
     '''
